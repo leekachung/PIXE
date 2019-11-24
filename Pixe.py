@@ -4,6 +4,8 @@ pixe PreInstall eXecution Environment
 '''
 #!/usr/bin/python
 import sys,argparse,logging,paramiko
+# Install What We Need
+from Install.Docker import docker
 
 class Pixe:
     # status tuple init
@@ -54,9 +56,11 @@ class Pixe:
 
     def excute_command(self):
         # Excute Command
-        stdin,stdout,stderr = self.__client.exec_command('pwd')
-        res = stdout.read().decode('utf-8')
-        print(res)
+        stdin,stdout,stderr = self.__client.exec_command(docker())
+        if(stdout.channel.recv_exit_status()):
+            logging.error('Install Error: ' + stdout.read().decode('UTF8'))
+            self.callback_server_api(str("error"))
+            sys.exit()
         self.callback_server_api(str("success"))
 
     def callback_server_api(self, msg=None):
