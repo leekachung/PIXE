@@ -9,8 +9,7 @@
 ```
 .
 ├── Install							安装配置目录
-│   ├── Docker.py					Docker安装文件
-│   └── __pycache__					生成的python缓存
+│   └── Docker.py					Docker安装文件
 ├── Pixe.py							脚本文件
 ├── README.md						README	
 └── logger.log						生成的日志文件

@@ -3,7 +3,7 @@ pixe PreInstall eXecution Environment
 @author LiKachung leekachung17@gmail.com
 '''
 #!/usr/bin/python
-import sys,argparse,logging,paramiko
+import sys,argparse,logging,time,paramiko
 # Install What We Need
 from Install.Docker import docker
 
@@ -46,27 +46,33 @@ class Pixe:
         try:
             # Connect Host
             self.__client.connect(hostname=self.__host,port=self.__port,username=self.__user,password=self.__pw)
+            logging.info(self.cur_time() + self.__host + ' running')
         except Exception as e:
             # callback notice server connect error
             self.callback_server_api(str(e))
             # record error log
-            logging.error('Connect Error: host=>{}, reason=>{}'.format(self.__host, e))
-            print('Connect Error: host=>{}, reason=>{}'.format(self.__host, e))
+            logging.error(self.cur_time() + 'Connect Error: host=>{}, reason=>{}'.format(self.__host, e))
+            print(self.cur_time() + 'Connect Error: host=>{}, reason=>{}'.format(self.__host, e))
             sys.exit()
 
     def excute_command(self):
         # Excute Command
-        stdin,stdout,stderr = self.__client.exec_command(docker())
-        if(stdout.channel.recv_exit_status()):
-            logging.error('Install Error: ' + stdout.read().decode('UTF8'))
-            self.callback_server_api(str("error"))
-            sys.exit()
+        for cmd in docker():
+            stdin,stdout,stderr = self.__client.exec_command(cmd)
+            if(stdout.channel.recv_exit_status()):
+                logging.error(self.cur_time() + 'Install Error: ' + stdout.read().decode('UTF8'))
+                self.callback_server_api(str("error"))
+                sys.exit()
+            print(stdout.read().decode('UTF8'))
         self.callback_server_api(str("success"))
 
     def callback_server_api(self, msg=None):
         if (msg):
             print("Callback: " + msg)
         # Todo: Callback Server Api to update status
+
+    def cur_time(self):
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + " "
 
     def __del__(self):
         # close ssh
